@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}Changes{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>Review and apply</h1>
+    <p class="muted">What will change in Squid's allow list. Applying keeps a backup, has Squid check its configuration and reloads it without dropping existing connections.</p>
+  </div>
+</div>
+
+{% if has_live and not managed %}
+<div class="banner banner-warn"><pre>The current allow list file wasn't written by PAW Proxy Pilot. Applying replaces it; the old file is kept alongside it with a .pawpilot-prev suffix.</pre></div>
+{% endif %}
+{% if count == 0 %}
+<div class="banner banner-warn"><pre>The allow list is empty. Applying it means PAWs can't reach anything through the proxy.</pre></div>
+{% endif %}
+
+<section class="card">
+  <h2>Differences from the live allow list</h2>
+  {% if diff %}
+  <pre class="diff">{% for line in diff.splitlines() %}<span class="{{ 'add' if line.startswith('+') and not line.startswith('+++') else ('del' if line.startswith('-') and not line.startswith('---') else ('hunk' if line.startswith('@@') else '')) }}">{{ line }}</span>{% endfor %}</pre>
+  {% else %}
+  <p class="muted">No differences. The live allow list already matches.</p>
+  {% endif %}
+</section>
+
+{% if redundant %}
+<section class="card">
+  <h2>Left out because a wider entry covers them</h2>
+  <p class="muted">{% for entry, wider in redundant.items() %}<code>{{ entry }}</code> (by <code>{{ wider }}</code>){{ ', ' if not loop.last }}{% endfor %}</p>
+</section>
+{% endif %}
+
+<form class="card form" method="post" action="/apply">
+  <input type="hidden" name="csrf" value="{{ user.csrf }}">
+  <div class="field">
+    <label for="note">Change note</label>
+    <input id="note" name="note" maxlength="200" placeholder="e.g. Added Defender portal">
+  </div>
+  <div class="form-actions">
+    <button class="btn btn-lg" type="submit" {{ 'disabled' if not diff }}>Apply to Squid</button>
+  </div>
+</form>
+
+<details class="card">
+  <summary>Full allow list ({{ count }} entr{{ 'y' if count == 1 else 'ies' }})</summary>
+  <pre class="config">{{ acl }}</pre>
+</details>
+{% endblock %}

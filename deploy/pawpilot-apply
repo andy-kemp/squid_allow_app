@@ -1,0 +1,76 @@
+#!/bin/bash
+# pawpilot-apply: install PAW Proxy Pilot's staged allow list and reload Squid.
+#
+# Runs as root via a single sudoers rule. Takes no arguments: it only ever
+# reads the fixed staging file, copies it somewhere the pawpilot user can't
+# touch, checks every line is a plain domain entry, then installs it. If Squid
+# rejects its configuration or the reload fails, the previous list is put back.
+set -euo pipefail
+export LC_ALL=C
+
+STAGE=/var/lib/pawpilot/staging.acl
+TARGET=/etc/squid/allowed_paw.acl
+BACKUP=/etc/squid/allowed_paw.acl.pawpilot-prev
+SQUID=/usr/sbin/squid
+ENTRY='\.?([a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?'
+
+if [[ $# -ne 0 ]]; then
+  echo "pawpilot-apply takes no arguments" >&2
+  exit 64
+fi
+if [[ ! -s "$STAGE" ]]; then
+  echo "No staged allow list at $STAGE" >&2
+  exit 66
+fi
+
+WORK=$(mktemp -d /run/pawpilot-apply.XXXXXX)
+trap 'rm -rf "$WORK"' EXIT
+install -m 0644 -o root -g root "$STAGE" "$WORK/allow.acl"
+
+if ! head -n1 "$WORK/allow.acl" | grep -q '^# Managed by PAW Proxy Pilot'; then
+  echo "Staged file is not a PAW Proxy Pilot allow list; refusing" >&2
+  exit 65
+fi
+if grep -v -n -E "^(#.*|$ENTRY)\$" "$WORK/allow.acl" > "$WORK/bad"; then
+  echo "Staged file has lines that are not domain entries; live list unchanged:" >&2
+  head -n 5 "$WORK/bad" >&2
+  exit 65
+fi
+
+restore() {
+  if [[ -f "$WORK/had-previous" ]]; then
+    install -m 0644 -o root -g root "$BACKUP" "$TARGET"
+  else
+    rm -f "$TARGET"
+  fi
+}
+
+if [[ -f "$TARGET" ]]; then
+  cp -a "$TARGET" "$BACKUP"
+  touch "$WORK/had-previous"
+fi
+install -m 0644 -o root -g root "$WORK/allow.acl" "$TARGET"
+
+if ! "$SQUID" -k parse > "$WORK/parse.log" 2>&1; then
+  restore
+  echo "Squid rejected its configuration with the new list; live list unchanged" >&2
+  grep -E 'FATAL|ERROR|unrecognized' "$WORK/parse.log" | head -n 10 >&2 || tail -n 10 "$WORK/parse.log" >&2
+  exit 2
+fi
+
+if systemctl is-active --quiet squid; then
+  ACTION=reload
+else
+  ACTION=start
+fi
+
+if ! systemctl "$ACTION" squid; then
+  echo "Squid $ACTION failed; restoring the previous allow list" >&2
+  restore
+  systemctl reload-or-restart squid || true
+  journalctl -u squid -n 15 --no-pager >&2 || true
+  exit 3
+fi
+
+rm -f "$STAGE"   # consumed; a stale copy must never be applied again
+echo "Squid ${ACTION}ed with the new allow list ($(grep -c -v '^#' "$TARGET") entries)"

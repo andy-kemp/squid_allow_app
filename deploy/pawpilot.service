@@ -1,0 +1,35 @@
+[Unit]
+Description=PAW Proxy Pilot - Squid allow-list admin for Privileged Access Workstations
+After=network-online.target squid.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=pawpilot
+Group=pawpilot
+# The proxy group can read Squid's access log.
+SupplementaryGroups=proxy
+EnvironmentFile=/etc/pawpilot/pawpilot.env
+WorkingDirectory=/opt/pawpilot
+ExecStart=/opt/pawpilot/venv/bin/python -m pawpilot.main
+Restart=on-failure
+RestartSec=3
+
+# Hardening. PAW Proxy Pilot must be able to run its one sudo command
+# (pawpilot-apply), so NoNewPrivileges stays off, and options that silently
+# force it on for non-root services are NOT used: PrivateDevices,
+# ProtectKernelTunables, ProtectKernelModules, ProtectKernelLogs, ProtectClock,
+# RestrictAddressFamilies, RestrictNamespaces, RestrictRealtime,
+# RestrictSUIDSGID, LockPersonality, MemoryDenyWriteExecute, SystemCallFilter,
+# SystemCallArchitectures.
+# The helper inherits these mounts, so /etc/squid must stay writable.
+NoNewPrivileges=no
+ProtectSystem=full
+ReadWritePaths=/var/lib/pawpilot /etc/squid
+ProtectHome=yes
+PrivateTmp=yes
+ProtectControlGroups=yes
+UMask=0027
+
+[Install]
+WantedBy=multi-user.target

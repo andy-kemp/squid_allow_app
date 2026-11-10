@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Edit {{ row.entry }}{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>Edit allowed domain</h1>
+    <p class="muted"><code>{{ row.entry }}</code>{% if row.entry.startswith('.') %} and all its subdomains{% endif %}. To change the domain itself, remove it and add the new one.</p>
+  </div>
+</div>
+{% if error %}<div class="banner banner-error" role="alert"><pre>{{ error }}</pre></div>{% endif %}
+<form class="card form" method="post" action="/allowed/{{ row.id }}/edit">
+  <input type="hidden" name="csrf" value="{{ user.csrf }}">
+  <div class="field">
+    <label for="note">Reason</label>
+    <input id="note" name="note" maxlength="200" value="{{ row.note }}">
+  </div>
+  <div class="field">
+    <label for="expires_on">Expires</label>
+    <input id="expires_on" name="expires_on" type="date" min="{{ today() }}" value="{{ row.expires_on }}">
+    <p class="hint">Leave blank to keep it allowed until someone removes it. The domain stays allowed through this day (UTC).</p>
+  </div>
+  <div class="form-actions">
+    <button class="btn" type="submit">Save</button>
+    <a class="btn btn-ghost" href="/allowed">Cancel</a>
+  </div>
+</form>
+{% endblock %}

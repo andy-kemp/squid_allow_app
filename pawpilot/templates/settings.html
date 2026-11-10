@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Settings{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>Settings</h1>
+    <p class="muted">How this server is set up. Change these in <code>/etc/pawpilot/pawpilot.env</code>, then restart PAW Proxy Pilot.</p>
+  </div>
+</div>
+
+<section class="card">
+  <h2>Sign-in</h2>
+  <dl class="kv">
+    <dt>Identity provider</dt><dd>Entra ID, tenant <code>{{ env.entra_tenant_id or 'not set' }}</code></dd>
+    <dt>Client secret expires</dt><dd>{{ env.entra_secret_expires or 'unknown' }}{% if env.secret_days_left is not none %} ({{ env.secret_days_left }} days){% endif %}</dd>
+    <dt>App role required</dt><dd>{{ env.required_role or 'none' }}</dd>
+    <dt>Allowed users</dt><dd>{{ env.allowed_users | join(', ') if env.allowed_users else 'any user with the role' }}</dd>
+    <dt>Session length</dt><dd>{{ env.session_hours }} hours</dd>
+  </dl>
+</section>
+
+<section class="card">
+  <h2>Squid</h2>
+  <dl class="kv">
+    <dt>Service</dt><dd><code>{{ env.squid_service }}</code> is {{ squid_state }}</dd>
+    <dt>Allow list file</dt><dd><code>{{ env.squid_acl }}</code></dd>
+    <dt>Access log</dt><dd><code>{{ env.squid_log }}</code> ({{ 'readable' if summary.readable else 'not readable' }}; newest {{ env.log_max_mb }} MB is used)</dd>
+    <dt>Apply command</dt><dd><code>{{ env.apply_cmd }}</code></dd>
+    <dt>Data folder</dt><dd><code>{{ env.data_dir }}</code></dd>
+  </dl>
+</section>
+{% endblock %}

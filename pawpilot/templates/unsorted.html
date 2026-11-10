@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block title %}Unsorted domains{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>Unsorted domains</h1>
+    <p class="muted">Hosts PAWs tried to reach and Squid denied, that you haven't allowed or confirmed as blocked. Newest first.</p>
+  </div>
+</div>
+
+{% if not summary.readable %}
+<div class="banner banner-warn"><pre>Can't read Squid's access log. That's expected until the first request goes through the proxy.</pre></div>
+{% endif %}
+
+{% if hosts %}
+<form id="bulk" class="bulk-bar" method="post" action="/unsorted/sort">
+  <input type="hidden" name="csrf" value="{{ user.csrf }}">
+  <button type="submit" class="btn btn-sm" name="action" value="allow-host" data-bulk>Allow selected hosts</button>
+  <button type="submit" class="btn btn-danger btn-sm" name="action" value="block" data-bulk>Block selected</button>
+  <span class="muted small">{{ hosts | length }} host{{ '' if hosts | length == 1 else 's' }}</span>
+  <span class="filter"><input type="search" data-filter placeholder="Filter" aria-label="Filter hosts"></span>
+</form>
+<div class="card table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th class="check-col"><input type="checkbox" id="selectAll" aria-label="Select all"></th>
+        <th>Host</th><th class="right">Requests</th><th>Last seen (UTC)</th><th>Clients</th><th class="right">Action</th>
+      </tr>
+    </thead>
+    <tbody>
+    {% for h in hosts %}
+      <tr data-row>
+        <td class="check-col"><input type="checkbox" form="bulk" name="hosts" value="{{ h.host }}" data-select aria-label="Select {{ h.host }}"></td>
+        <td class="domain">{{ h.host }}</td>
+        <td class="right">{{ h.count }}</td>
+        <td class="nowrap">{{ h.last | stamp }}</td>
+        <td class="small">{% for c in h.clients %}<code>{{ c }}</code>{{ ', ' if not loop.last }}{% endfor %}{% if h.more_clients %} +{{ h.more_clients }} more{% endif %}</td>
+        <td>
+          <form class="row-actions" method="post" action="/unsorted/sort">
+            <input type="hidden" name="csrf" value="{{ user.csrf }}">
+            <input type="hidden" name="hosts" value="{{ h.host }}">
+            <button type="submit" class="btn btn-xs" name="action" value="allow-host" title="Allow only {{ h.host }}">Allow host</button>
+            <button type="submit" class="btn btn-ghost btn-xs" name="action" value="allow-domain" title="Allow {{ h.parent }} and every subdomain">Allow .{{ h.parent }}</button>
+            <button type="submit" class="btn btn-danger btn-xs" name="action" value="block" title="Keep {{ h.parent }} and its subdomains out of Unsorted">Block</button>
+          </form>
+        </td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+<p class="muted small">Allowing a host is staged until you apply it. Block confirms the whole domain as blocked.{% if summary.truncated %} Counts cover the newest part of the access log only.{% endif %}</p>
+{% else %}
+<section class="card">
+  <h2>Nothing to sort</h2>
+  <p class="muted">Every host Squid has denied is either allowed now or confirmed as blocked.</p>
+</section>
+{% endif %}
+{% endblock %}
+{% block scripts %}<script src="/static/app.js?v={{ version }}"></script>{% endblock %}

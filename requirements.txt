@@ -1,8 +1,7 @@
-Flask
-publicsuffix2
-pam
-six
-pyotp
-mysql-connector-python
-flask_sqlalchemy
-werkzeug
+fastapi>=0.115,<1
+uvicorn>=0.30,<1
+jinja2>=3.1,<4
+itsdangerous>=2.2,<3
+python-multipart>=0.0.9
+msal>=1.31,<2
+publicsuffix2>=2.20191221

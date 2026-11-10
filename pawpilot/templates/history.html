@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}History{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>History</h1>
+    <p class="muted">Every allow list PAW Proxy Pilot has applied. Restoring a version puts its domains back and applies them.</p>
+  </div>
+</div>
+{% if versions %}
+<div class="card table-wrap">
+  <table>
+    <thead><tr><th>Version</th><th>Applied</th><th>By</th><th>Note</th><th></th></tr></thead>
+    <tbody>
+    {% for v in versions %}
+      <tr>
+        <td><a href="/history/{{ v.id }}">#{{ v.id }}</a>{% if loop.first %} <span class="tag">live</span>{% endif %}</td>
+        <td class="nowrap">{{ v.created_at }}</td>
+        <td>{{ v.user }}</td>
+        <td>{{ v.note }}</td>
+        <td class="right"><a class="btn btn-ghost btn-sm" href="/history/{{ v.id }}">View</a></td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<section class="card"><p class="muted">Nothing applied yet.</p></section>
+{% endif %}
+{% endblock %}

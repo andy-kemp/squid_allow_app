@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}Blocked domains{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>Blocked domains</h1>
+    <p class="muted">Domains you've confirmed should stay blocked. This only keeps them out of Unsorted; anything not allowed is blocked anyway.</p>
+  </div>
+</div>
+
+<form class="card inline-form" method="post" action="/blocked/add">
+  <input type="hidden" name="csrf" value="{{ user.csrf }}">
+  <input type="text" name="domain" placeholder="example.com" aria-label="Domain to block" required autocomplete="off" spellcheck="false">
+  <label class="check"><input type="checkbox" name="subdomains" value="1" checked> Include all subdomains</label>
+  <button type="submit" class="btn">Confirm block</button>
+</form>
+
+{% if rows %}
+<form id="bulk" class="bulk-bar" method="post" action="/blocked/delete">
+  <input type="hidden" name="csrf" value="{{ user.csrf }}">
+  <button type="submit" class="btn btn-danger btn-sm" data-bulk>Remove selected</button>
+  <span class="muted small">{{ rows | length }} domain{{ '' if rows | length == 1 else 's' }}</span>
+  <span class="filter"><input type="search" data-filter placeholder="Filter" aria-label="Filter domains"></span>
+</form>
+<div class="card table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th class="check-col"><input type="checkbox" id="selectAll" aria-label="Select all"></th>
+        <th>Domain</th><th>Added</th><th class="right">Action</th>
+      </tr>
+    </thead>
+    <tbody>
+    {% for r in rows %}
+      <tr data-row>
+        <td class="check-col"><input type="checkbox" form="bulk" name="ids" value="{{ r.id }}" data-select aria-label="Select {{ r.entry }}"></td>
+        <td class="domain">{{ r.entry }}{% if r.entry.startswith('.') %} <span class="tag tag-muted">+ subdomains</span>{% endif %}</td>
+        <td class="small muted">{{ r.added_by }} · {{ r.created_at[:10] }}</td>
+        <td>
+          <div class="row-actions">
+            <form method="post" action="/blocked/delete">
+              <input type="hidden" name="csrf" value="{{ user.csrf }}">
+              <input type="hidden" name="ids" value="{{ r.id }}">
+              <button type="submit" class="btn btn-danger btn-xs">Remove</button>
+            </form>
+          </div>
+        </td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<section class="card">
+  <h2>No confirmed blocks</h2>
+  <p class="muted">Confirm a block from the Unsorted page to stop a domain showing up there again.</p>
+</section>
+{% endif %}
+{% endblock %}
+{% block scripts %}<script src="/static/app.js?v={{ version }}"></script>{% endblock %}

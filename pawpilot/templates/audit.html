@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Audit{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>Audit log</h1>
+    <p class="muted">Sign-ins, allow and block changes, applies and expiries. Newest first.</p>
+  </div>
+</div>
+<div class="card table-wrap">
+  <table>
+    <thead><tr><th>When</th><th>Who</th><th>Action</th><th>Detail</th></tr></thead>
+    <tbody>
+    {% for e in entries %}
+      <tr><td class="nowrap">{{ e.created_at }}</td><td>{{ e.user }}</td><td><span class="tag tag-muted">{{ e.action }}</span></td><td class="detail">{{ e.detail }}</td></tr>
+    {% else %}
+      <tr><td colspan="4" class="muted">No entries yet.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

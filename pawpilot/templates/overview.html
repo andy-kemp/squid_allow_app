@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+{% block title %}Overview{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>Overview</h1>
+    <p class="muted">Web proxy for Privileged Access Workstations. Everything is blocked unless a domain is on the allow list.</p>
+  </div>
+</div>
+
+{% if not summary.readable %}
+<div class="banner banner-warn"><pre>Can't read Squid's access log, so Unsorted and Clients are empty. That's expected until the first request goes through the proxy.</pre></div>
+{% endif %}
+
+<div class="stats">
+  <a class="card stat" href="/allowed">
+    <span class="stat-label">Allowed</span>
+    <span class="stat-value">{{ allowed_count }}</span>
+    <span class="stat-link">Manage allowed domains</span>
+  </a>
+  <a class="card stat" href="/blocked">
+    <span class="stat-label">Confirmed blocked</span>
+    <span class="stat-value">{{ blocked_count }}</span>
+    <span class="stat-link">Manage blocked domains</span>
+  </a>
+  <a class="card stat" href="/unsorted">
+    <span class="stat-label">Unsorted</span>
+    <span class="stat-value">{{ unsorted_count }}</span>
+    <span class="stat-link">Review unsorted domains</span>
+  </a>
+  <div class="card stat">
+    <span class="stat-label">Squid</span>
+    <span class="stat-value {{ 'state-active' if squid_state == 'active' else ('state-bad' if squid_state in ('failed', 'inactive') else '') }}">{{ 'Running' if squid_state == 'active' else squid_state | capitalize }}</span>
+    <span class="muted small">{{ 'Serving the live allow list' if squid_state == 'active' else 'systemd reports: ' ~ squid_state }}</span>
+  </div>
+</div>
+
+<div class="two-col">
+  <section class="group">
+    <h2>Most requested blocked hosts</h2>
+    <div class="card table-wrap">
+      <table>
+        <thead><tr><th>Host</th><th class="right">Requests</th><th>Last seen (UTC)</th></tr></thead>
+        <tbody>
+        {% for h in top %}
+          <tr><td class="domain">{{ h.host }}</td><td class="right">{{ h.count }}</td><td class="nowrap">{{ h.last | stamp }}</td></tr>
+        {% else %}
+          <tr><td colspan="3" class="muted">Nothing waiting to be sorted.</td></tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="group">
+    <h2>Expiring soon</h2>
+    <div class="card table-wrap">
+      <table>
+        <thead><tr><th>Domain</th><th>Expires</th><th>Note</th></tr></thead>
+        <tbody>
+        {% for r in soon %}
+          <tr><td class="domain">{{ r.entry }}</td><td class="nowrap">{{ r.expires_on }}</td><td>{{ r.note }}</td></tr>
+        {% else %}
+          <tr><td colspan="3" class="muted">No allowed domains have an expiry date.</td></tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>
+
+<section class="group">
+  <h2>Clients</h2>
+  <div class="card table-wrap">
+    <table>
+      <thead><tr><th>Client IP</th><th class="right">Requests</th><th class="right">Denied</th><th>Last seen (UTC)</th></tr></thead>
+      <tbody>
+      {% for c in clients %}
+        <tr><td><code>{{ c.ip }}</code></td><td class="right">{{ c.requests }}</td><td class="right">{{ c.denied }}</td><td class="nowrap">{{ c.last | stamp }}</td></tr>
+      {% else %}
+        <tr><td colspan="4" class="muted">No clients have used the proxy yet.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% if summary.truncated %}<p class="muted small">Counts cover the newest part of the access log only.</p>{% endif %}
+</section>
+{% endblock %}

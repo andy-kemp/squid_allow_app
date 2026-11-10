@@ -1,0 +1,3 @@
+# PAW Proxy Pilot may run exactly one command as root: the apply helper, with no arguments.
+Defaults:pawpilot !requiretty
+pawpilot ALL=(root) NOPASSWD: /usr/local/sbin/pawpilot-apply ""

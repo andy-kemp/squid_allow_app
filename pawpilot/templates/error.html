@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}Error{% endblock %}
+{% block content %}
+<section class="card narrow">
+  <h1>{{ 'Not found' if status == 404 else 'Something went wrong' }}</h1>
+  <p>{{ detail }}</p>
+  <p><a class="btn btn-ghost" href="/">Back to the overview</a></p>
+</section>
+{% endblock %}

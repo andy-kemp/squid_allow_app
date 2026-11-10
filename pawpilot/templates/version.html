@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Version #{{ ver.id }}{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>Version #{{ ver.id }}</h1>
+    <p class="muted">Applied {{ ver.created_at }} by {{ ver.user }}{% if ver.note %}: {{ ver.note }}{% endif %}</p>
+  </div>
+  <form method="post" action="/history/{{ ver.id }}/restore" onsubmit="return confirm('Restore version #{{ ver.id }} and apply it now?');">
+    <input type="hidden" name="csrf" value="{{ user.csrf }}">
+    <button class="btn" type="submit" {{ 'disabled' if not diff }}>Restore and apply</button>
+  </form>
+</div>
+<section class="card">
+  <h2>Compared with the live allow list</h2>
+  {% if diff %}
+  <pre class="diff">{% for line in diff.splitlines() %}<span class="{{ 'add' if line.startswith('+') and not line.startswith('+++') else ('del' if line.startswith('-') and not line.startswith('---') else ('hunk' if line.startswith('@@') else '')) }}">{{ line }}</span>{% endfor %}</pre>
+  {% else %}
+  <p class="muted">Identical to the live allow list.</p>
+  {% endif %}
+</section>
+<details class="card">
+  <summary>Full allow list</summary>
+  <pre class="config">{{ ver.acl }}</pre>
+</details>
+{% endblock %}

@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>{% block title %}PAW Proxy Pilot{% endblock %} · PAW Proxy Pilot</title>
+  <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/static/style.css?v={{ version }}">
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a class="brand" href="/" aria-label="PAW Proxy Pilot home">
+        <img class="logo logo-dark" src="/static/akc-logo-dark-bg.png" alt="Andy Kemp Consulting" width="160" height="31">
+        <img class="logo logo-light" src="/static/akc-logo-light-bg.png" alt="Andy Kemp Consulting" width="160" height="31">
+        <span class="product">PAW Proxy Pilot <small>v{{ version }}</small></span>
+      </a>
+      {% if user %}
+      <nav class="nav" aria-label="Main">
+        {% set path = request.url.path %}
+        <a href="/" class="{{ 'active' if path == '/' }}">Overview</a>
+        <a href="/allowed" class="{{ 'active' if path.startswith('/allowed') }}">Allowed</a>
+        <a href="/blocked" class="{{ 'active' if path.startswith('/blocked') }}">Blocked</a>
+        <a href="/unsorted" class="{{ 'active' if path.startswith('/unsorted') }}">Unsorted</a>
+        <a href="/changes" class="{{ 'active' if path.startswith('/changes') }}">Changes{% if pending %}<span class="dot" title="Unapplied changes"></span>{% endif %}</a>
+        <a href="/history" class="{{ 'active' if path.startswith('/history') }}">History</a>
+        <a href="/audit" class="{{ 'active' if path.startswith('/audit') }}">Audit</a>
+        <a href="/settings" class="{{ 'active' if path.startswith('/settings') }}">Settings</a>
+      </nav>
+      <form class="who" method="post" action="/logout">
+        <span title="{{ user.upn }}">{{ user.name }}</span>
+        <input type="hidden" name="csrf" value="{{ user.csrf }}">
+        <button class="btn btn-ghost btn-sm" type="submit">Sign out</button>
+      </form>
+      {% endif %}
+    </div>
+  </header>
+
+  <main class="page">
+    {% if user and pending and not request.url.path.startswith('/changes') %}
+    <div class="banner banner-pending">
+      <span>You have changes that aren't live yet.</span>
+      <a class="btn btn-sm" href="/changes">Review and apply</a>
+    </div>
+    {% endif %}
+    {% if secret_days is not none and secret_days <= 30 %}
+    <div class="banner banner-{{ 'error' if secret_days <= 7 else 'warn' }}">
+      <span>{% if secret_days < 0 %}The Entra client secret has expired, so nobody can sign in.{% else %}The Entra client secret expires in {{ secret_days }} day{{ '' if secret_days == 1 else 's' }}.{% endif %}
+      To rotate it, run New-PAWProxyPilotApp.ps1 again on your Windows or Mac machine, then <code>sudo ./install.sh --entra</code> on the server.</span>
+    </div>
+    {% endif %}
+    {% for f in flashes %}
+    <div class="banner banner-{{ f.level }}" role="status"><pre>{{ f.message }}</pre></div>
+    {% endfor %}
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="footer">
+    PAW Proxy Pilot · <a href="https://www.andykemp.com" rel="noopener">Andy Kemp Consulting</a>
+  </footer>
+  {% block scripts %}{% endblock %}
+</body>
+</html>
