@@ -1,104 +1,49 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="utf-8">
-  <title>PAW Proxy Pilot</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-</head>
-<body>
-  {% if changes_pending %}
-  <div class="banner-alert" id="banner-alert">
-    Changes detected: Please restart the Squid service to apply updates.
-    <button type="button" class="btn btn-warning" id="restart-squid-btn">Restart Squid</button>
-    <span id="restart-spinner" style="display:none;vertical-align:middle;">
-      <svg width="28" height="28" viewBox="0 0 44 44" stroke="#2563eb">
-        <g fill="none" fill-rule="evenodd" stroke-width="4">
-          <circle cx="22" cy="22" r="20" stroke-opacity=".2"/>
-          <path d="M42 22c0-11.046-8.954-20-20-20">
-            <animateTransform attributeName="transform" type="rotate"
-              from="0 22 22" to="360 22 22"
-              dur="0.9s" repeatCount="indefinite"/>
-          </path>
-        </g>
-      </svg>
-      Restarting...
-    </span>
+{% extends "base.html" %}
+{% block title %}Overview{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>Overview</h1>
+    <p class="muted">Privileged Access Workstation web proxy. Everything is blocked unless a domain is on the allow list.</p>
   </div>
-  <script>
-  document.getElementById("restart-squid-btn").onclick = function() {
-    this.style.display = "none";
-    document.getElementById("restart-spinner").style.display = "inline-block";
-    fetch('{{ url_for("restart_squid") }}', {method:"POST"})
-      .then(r => r.json())
-      .then(data => {
-        document.getElementById("restart-spinner").innerHTML = data.message || "Restarted!";
-        setTimeout(() => location.reload(), 2000);
-      });
-  };
-  </script>
+  {% if not session.get('changes_pending') %}
+  <div class="actions">
+    <button class="btn btn-ghost" type="button" data-restart-squid>Restart Squid</button>
+  </div>
   {% endif %}
-  <div class="card" style="min-height:540px; position:relative;">
-    {% if session.admin_level == 99 %}
-    <a href="{{ url_for('admin') }}" title="Admin Panel"
-       style="position:absolute;top:20px;right:28px;z-index:2;display:inline-block;text-decoration:none;">
-      <!-- Use cog.png from static if you have one, fallback to SVG otherwise -->
-      <img src="{{ url_for('static', filename='cog.png') }}" alt="Admin" width="32" height="32" style="vertical-align:middle;"/>
-    </a>
-    {% endif %}
-    <div style="text-align:center; font-weight:700; font-size:1.5em; margin-bottom:10px;">
-      <span style="color:#2563eb;">PAW Proxy Pilot</span>
-    </div>
-    <div style="text-align:center; color:#6b7280; margin-bottom:24px;">
-      Privileged Access Web Proxy Management
-    </div>
-    <h2>Overview</h2>
-    {% include '_actions_button.html' %}
+</div>
+
+<div class="stats">
+  <a class="card stat" href="{{ url_for('manage_allowed') }}">
+    <span class="stat-label">Allowed</span>
+    <span class="stat-value">{{ allowed_count }}</span>
+    <span class="stat-link">Manage allowed domains</span>
+  </a>
+  <a class="card stat" href="{{ url_for('manage_blocked') }}">
+    <span class="stat-label">Confirmed blocked</span>
+    <span class="stat-value">{{ blocked_count }}</span>
+    <span class="stat-link">Manage blocked domains</span>
+  </a>
+  <a class="card stat" href="{{ url_for('manage_unsorted') }}">
+    <span class="stat-label">Unsorted</span>
+    <span class="stat-value">{{ unconfirmed_count }}</span>
+    <span class="stat-link">Review unsorted domains</span>
+  </a>
+</div>
+
+<section class="group">
+  <h2>Clients</h2>
+  <div class="card table-wrap">
     <table>
-        <tr>
-            <th>Status</th>
-            <th>Domains</th>
-            <th>Action</th>
-        </tr>
-        <tr>
-            <td>Domains Allowed</td>
-            <td class="count">{{ allowed_count }}</td>
-            <td>
-              <a href="{{ url_for('manage_allowed') }}" class="btn">Manage</a>
-            </td>
-        </tr>
-        <tr>
-            <td>Domains Confirmed to Block</td>
-            <td class="count">{{ blocked_count }}</td>
-            <td>
-              <a href="{{ url_for('manage_blocked') }}" class="btn">Manage</a>
-            </td>
-        </tr>
-        <tr>
-            <td>Domains Unconfirmed</td>
-            <td class="count">{{ unconfirmed_count }}</td>
-            <td>
-              <a href="{{ url_for('manage_unsorted') }}" class="btn">Manage</a>
-            </td>
-        </tr>
+      <thead><tr><th>Client IP</th><th>Last connected (UTC)</th></tr></thead>
+      <tbody>
+      {% for ip, last_connected in clients.items() %}
+        <tr><td><code>{{ ip }}</code></td><td class="nowrap">{{ last_connected }}</td></tr>
+      {% else %}
+        <tr><td colspan="2" class="muted">No clients have used the proxy yet.</td></tr>
+      {% endfor %}
+      </tbody>
     </table>
-    {% if clients %}
-    <div style="margin-top:32px;">
-        <h3>Client Overview</h3>
-        <table>
-            <tr>
-                <th>Client IP</th>
-                <th>Last Connected</th>
-            </tr>
-            {% for ip, last_connected in clients.items() %}
-            <tr>
-                <td>{{ ip }}</td>
-                <td>{{ last_connected }}</td>
-            </tr>
-            {% endfor %}
-        </table>
-    </div>
-    {% endif %}
-    {% include '_floating_buttons.html' %}
   </div>
-</body>
-</html>
+</section>
+{% endblock %}

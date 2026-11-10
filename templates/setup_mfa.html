@@ -1,29 +1,16 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>MFA Setup</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-</head>
-<body>
-    <div class="card" style="max-width:400px; margin:60px auto; padding:2em;">
-        <h1 style="text-align:center;">Setup MFA</h1>
-        <p>Scan the QR code below with your authenticator app.</p>
-        <img src="https://api.qrserver.com/v1/create-qr-code/?data={{ qr_uri|urlencode }}&size=180x180" alt="MFA QR code">
-        <form method="post" style="margin-top:1.5em;">
-            <label>Enter code from app:</label>
-            <input type="text" name="code" maxlength="6" required>
-            <button type="submit" class="btn" style="width:100%;">Verify</button>
-        </form>
-        {% with messages = get_flashed_messages(with_categories=true) %}
-          {% if messages %}
-            <ul class="flashes" style="color:#b91c1c; text-align:center; list-style:none; padding:0; margin-top:1em;">
-              {% for category, message in messages %}
-                <li class="{{ category }}">{{ message }}</li>
-              {% endfor %}
-            </ul>
-          {% endif %}
-        {% endwith %}
+{% extends "base.html" %}
+{% block title %}Set up MFA{% endblock %}
+{% block content %}
+<section class="login card">
+  <h1>Set up MFA</h1>
+  <p class="muted">Scan this QR code with your authenticator app.</p>
+  <img class="qr" src="https://api.qrserver.com/v1/create-qr-code/?data={{ qr_uri|urlencode }}&size=180x180" alt="MFA QR code" width="196" height="196">
+  <form class="form" method="post">
+    <div class="field">
+      <label for="code">Authenticator code</label>
+      <input class="code-input" type="text" name="code" id="code" maxlength="6" inputmode="numeric" required autocomplete="one-time-code" placeholder="123456">
     </div>
-</body>
-</html>
+    <button class="btn btn-lg" type="submit">Verify</button>
+  </form>
+</section>
+{% endblock %}

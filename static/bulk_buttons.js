@@ -1,30 +1,23 @@
+// Enables the bulk action buttons only while at least one domain is ticked.
 function updateBulkButtons() {
-    const checkboxes = document.querySelectorAll('input[name="selected_domains"]:checked');
-    const allowBtn = document.getElementById('allowSelected');
-    const removeBtn = document.getElementById('removeSelected');
-    const enabled = checkboxes.length > 0;
-    if (allowBtn) allowBtn.disabled = !enabled;
-    if (removeBtn) removeBtn.disabled = !enabled;
+    const enabled = document.querySelectorAll('input[name="selected_domains"]:checked').length > 0;
+    document.querySelectorAll('[data-bulk]').forEach(function (btn) { btn.disabled = !enabled; });
 }
 
 function toggleAll(source) {
-    const checkboxes = document.querySelectorAll('input[name="selected_domains"]');
-    for(let i=0; i<checkboxes.length; i++) {
-        checkboxes[i].checked = source.checked;
-    }
+    document.querySelectorAll('input[name="selected_domains"]').forEach(function (box) {
+        box.checked = source.checked;
+    });
     updateBulkButtons();
 }
 
-document.addEventListener('DOMContentLoaded', function() {
-    const checkboxes = document.querySelectorAll('input[name="selected_domains"]');
-    for(let i=0; i<checkboxes.length; i++) {
-        checkboxes[i].addEventListener('change', updateBulkButtons);
-    }
+document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('input[name="selected_domains"]').forEach(function (box) {
+        box.addEventListener('change', updateBulkButtons);
+    });
     const selectAll = document.getElementById('selectAll');
     if (selectAll) {
-        selectAll.addEventListener('change', function() {
-            toggleAll(this);
-        });
+        selectAll.addEventListener('change', function () { toggleAll(this); });
     }
     updateBulkButtons();
 });

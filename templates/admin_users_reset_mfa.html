@@ -1,26 +1,17 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <title>Reset MFA - PAW Proxy Pilot</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-</head>
-<body>
-<div class="card" style="max-width:380px;">
-    <h2>Reset MFA</h2>
-    <p>Resetting MFA will require the user <b>{{ user.username }}</b> to re-enroll their authenticator app next login.<br>
-    Are you sure you want to reset MFA for this user?</p>
-    <form method="post">
-        <button type="submit" class="btn btn-danger" style="width:100%;margin-top:14px;">Reset MFA</button>
-    </form>
-    <a href="{{ url_for('admin_users') }}" class="btn btn-secondary" style="width:100%;margin-top:8px;">Cancel</a>
-    {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            {% for category, message in messages %}
-                <div class="alert alert-{{ category }}">{{ message }}</div>
-            {% endfor %}
-        {% endif %}
-    {% endwith %}
+{% extends "base.html" %}
+{% block title %}Reset MFA{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>Reset MFA</h1>
+    <p class="muted">{{ user.username }} will have to enrol their authenticator app again at next sign-in.</p>
+  </div>
 </div>
-</body>
-</html>
+<form class="card form" method="post">
+  <p>Reset MFA for <strong>{{ user.username }}</strong>?</p>
+  <div class="form-actions">
+    <button type="submit" class="btn btn-danger">Reset MFA</button>
+    <a class="btn btn-ghost" href="{{ url_for('admin_users') }}">Cancel</a>
+  </div>
+</form>
+{% endblock %}

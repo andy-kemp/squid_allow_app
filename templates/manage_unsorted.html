@@ -1,95 +1,60 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <title>Manage Unsorted Domains - PAW Proxy Pilot</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-</head>
-<body>
-{% if changes_pending %}
-<div class="banner-alert" id="banner-alert">
-  Changes detected: Please restart the Squid service to apply updates.
-  <button type="button" class="btn btn-warning" id="restart-squid-btn">Restart Squid</button>
-  <span id="restart-spinner" style="display:none;vertical-align:middle;">
-    <svg width="28" height="28" viewBox="0 0 44 44" stroke="#2563eb">
-      <g fill="none" fill-rule="evenodd" stroke-width="4">
-        <circle cx="22" cy="22" r="20" stroke-opacity=".2"/>
-        <path d="M42 22c0-11.046-8.954-20-20-20">
-          <animateTransform attributeName="transform" type="rotate"
-            from="0 22 22" to="360 22 22"
-            dur="0.9s" repeatCount="indefinite"/>
-        </path>
-      </g>
-    </svg>
-    Restarting...
-  </span>
+{% extends "base.html" %}
+{% block title %}Unsorted domains{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>Unsorted domains</h1>
+    <p class="muted">Domains PAWs have tried to reach that you haven't allowed or confirmed as blocked yet.</p>
+  </div>
+  {% if not session.get('changes_pending') %}
+  <div class="actions">
+    <button class="btn btn-ghost" type="button" data-restart-squid>Restart Squid</button>
+  </div>
+  {% endif %}
 </div>
-<script>
-document.getElementById("restart-squid-btn").onclick = function() {
-  this.style.display = "none";
-  document.getElementById("restart-spinner").style.display = "inline-block";
-  fetch('{{ url_for("restart_squid") }}', {method:"POST"})
-    .then(r => r.json())
-    .then(data => {
-      document.getElementById("restart-spinner").innerHTML = data.message || "Restarted!";
-      setTimeout(() => location.reload(), 2000);
-    });
-};
-</script>
+
+{% if unsorted_domains %}
+<form id="bulk" class="bulk-bar" method="post" action="{{ url_for('bulk_mark_unsorted') }}">
+  <button type="submit" class="btn btn-sm" name="bulk" value="allow" data-bulk>Allow selected</button>
+  <button type="submit" class="btn btn-danger btn-sm" name="bulk" value="block" data-bulk>Block selected</button>
+  <span class="muted small">{{ unsorted_domains | length }} domain{{ '' if unsorted_domains | length == 1 else 's' }}</span>
+</form>
+<div class="card table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th class="check-col"><input type="checkbox" id="selectAll" aria-label="Select all"></th>
+        <th>Domain</th>
+        <th class="right">Action</th>
+      </tr>
+    </thead>
+    <tbody>
+    {% for domain in unsorted_domains %}
+      <tr>
+        <td class="check-col"><input type="checkbox" form="bulk" name="selected_domains" value="{{ domain }}" aria-label="Select {{ domain }}"></td>
+        <td class="domain">{{ domain }}</td>
+        <td>
+          <div class="row-actions">
+            <form method="post" action="{{ url_for('mark_allowed') }}">
+              <input type="hidden" name="domain" value="{{ domain }}">
+              <button type="submit" class="btn btn-xs">Allow</button>
+            </form>
+            <form method="post" action="{{ url_for('mark_blocked') }}">
+              <input type="hidden" name="domain" value="{{ domain }}">
+              <button type="submit" class="btn btn-danger btn-xs">Block</button>
+            </form>
+          </div>
+        </td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<section class="card">
+  <h2>Nothing to sort</h2>
+  <p class="muted">Every domain seen in the Squid log is either allowed or confirmed as blocked.</p>
+</section>
 {% endif %}
-<div class="card" style="position:relative;">
-    <div style="text-align:center; font-weight:700; font-size:1.5em; margin-bottom:10px;">
-        <span style="color:#2563eb;">PAW Proxy Pilot</span>
-    </div>
-    <div style="text-align:center; color:#6b7280; margin-bottom:24px;">
-        Privileged Access Web Proxy Management
-    </div>
-    <h2>Manage Unsorted Domains</h2>
-    {% include '_actions_button.html' %}
-    {% if unsorted_domains %}
-    <form method="post" action="{{ url_for('bulk_mark_unsorted') }}">
-        <div style="margin-bottom:12px;">
-            <select name="bulk" class="bulk-select">
-                <option value="allow">Allow Selected</option>
-                <option value="block">Block Selected</option>
-            </select>
-            <button type="submit" class="btn">Apply Bulk Action</button>
-        </div>
-        <table>
-            <tr>
-                <th></th>
-                <th>Domain</th>
-                <th>Action</th>
-            </tr>
-            {% for domain in unsorted_domains %}
-            <tr>
-                <td><input type="checkbox" name="selected_domains" value="{{ domain }}"></td>
-                <td>{{ domain }}</td>
-                <td>
-                    <form method="post" action="{{ url_for('mark_allowed') }}" style="display:inline;">
-                        <input type="hidden" name="domain" value="{{ domain }}">
-                        <button type="submit" class="btn btn-success">Allow</button>
-                    </form>
-                    <form method="post" action="{{ url_for('mark_blocked') }}" style="display:inline;">
-                        <input type="hidden" name="domain" value="{{ domain }}">
-                        <button type="submit" class="btn btn-danger">Block</button>
-                    </form>
-                </td>
-            </tr>
-            {% endfor %}
-        </table>
-        <div style="margin-top:12px;">
-            <select name="bulk" class="bulk-select">
-                <option value="allow">Allow Selected</option>
-                <option value="block">Block Selected</option>
-            </select>
-            <button type="submit" class="btn">Apply Bulk Action</button>
-        </div>
-    </form>
-    {% else %}
-    <p>No unsorted domains.</p>
-    {% endif %}
-    {% include '_floating_buttons.html' %}
-</div>
-</body>
-</html>
+{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='bulk_buttons.js') }}"></script>{% endblock %}

@@ -1,70 +1,63 @@
-<!DOCTYPE html>
-<html>
+<!doctype html>
+<html lang="en-GB">
 <head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>This domain is blocked</title>
   <style>
+    /* Self-contained: Squid serves this page on its own, so no external assets. */
+    :root {
+      --bg-soft: #11100f; --panel: #171310; --panel-raised: #1d1713;
+      --copper-light: #e0a070; --text: #d8d1cb; --heading: #f7f4f1; --muted: #aaa19a;
+      --border: rgba(193, 116, 71, 0.30); --border-strong: rgba(213, 145, 94, 0.55);
+      --err-bg: rgba(220, 90, 80, 0.14); --err-fg: #f2a59c;
+      color-scheme: dark;
+    }
+    @media (prefers-color-scheme: light) {
+      :root {
+        --bg-soft: #f7f3ef; --panel: #ffffff; --panel-raised: #f4ede6;
+        --copper-light: #75401f; --text: #302923; --heading: #201a16; --muted: #625850;
+        --border: rgba(138, 78, 46, 0.25); --border-strong: rgba(138, 78, 46, 0.5);
+        --err-bg: #fbeae8; --err-fg: #8c2a20;
+        color-scheme: light;
+      }
+    }
+    * { box-sizing: border-box; }
     body {
-      background: #f44336;
-      margin: 0;
-      font-family: Arial, sans-serif;
-      color: #fff;
+      margin: 0; min-height: 100vh; padding: 1rem;
+      display: flex; align-items: center; justify-content: center;
+      background: var(--bg-soft); color: var(--text);
+      font: 15px/1.55 Inter, Aptos, "Segoe UI", system-ui, -apple-system, sans-serif;
     }
-    .container {
-      max-width: 500px;
-      margin: 80px auto;
-      background: rgba(255,255,255,0.1);
-      border-radius: 16px;
-      box-shadow: 0 4px 32px rgba(0,0,0,0.2);
-      padding: 40px 32px 32px 32px;
-      text-align: center;
+    .card {
+      flex: 1 1 auto; max-width: 480px; text-align: center;
+      background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 2rem;
     }
-    .icon {
-      width: 70px;
-      height: 70px;
-      margin: 0 auto 20px auto;
-      display: block;
+    .tag {
+      display: inline-block; font-size: 0.72rem; font-weight: 600; text-transform: uppercase;
+      letter-spacing: 0.05em; background: var(--err-bg); color: var(--err-fg);
+      padding: 0.15rem 0.5rem; border-radius: 4px; margin-bottom: 0.9rem;
     }
-    h1 {
-      margin-top: 0;
-      margin-bottom: 24px;
-      font-size: 2em;
-      color: #fff;
-      letter-spacing: 1px;
-    }
+    h1 { color: var(--heading); font-size: 1.6rem; line-height: 1.25; margin: 0 0 0.5rem; }
+    p { margin: 0 0 0.75rem; }
     .domain {
-      font-weight: bold;
-      color: #fffde7;
-      font-size: 1.2em;
-      word-break: break-all;
+      background: var(--panel-raised); border: 1px solid var(--border-strong); border-radius: 8px;
+      padding: 0.7rem 1rem; margin: 1.25rem 0; word-break: break-all; color: var(--heading);
+      font-family: ui-monospace, "Cascadia Code", "SF Mono", Consolas, monospace; font-size: 0.9rem;
     }
-    .note {
-      background: rgba(255,255,255,0.2);
-      color: #fffde7;
-      padding: 12px;
-      border-radius: 8px;
-      margin-top: 24px;
-      font-size: 1em;
-    }
-    .explanation {
-      margin-top: 18px;
-      font-size: 1.15em;
-    }
+    .domain span { display: block; color: var(--muted); font-family: inherit; font-size: 0.8rem; margin-bottom: 0.2rem; }
+    .muted { color: var(--muted); font-size: 0.85rem; margin: 0; }
+    .brand { margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid var(--border); color: var(--muted); font-size: 0.8rem; }
   </style>
 </head>
 <body>
-  <div class="container">
-    <svg class="icon" viewBox="0 0 64 64"><circle cx="32" cy="32" r="30" fill="#fff"/><text x="32" y="46" text-anchor="middle" font-size="44" font-weight="bold" fill="#f44336">!</text></svg>
+  <main class="card">
+    <span class="tag">Blocked</span>
     <h1>This domain is blocked</h1>
-    <div class="explanation">
-      You are using a <b>PAW</b>. Do you really need access to this site?
-    </div>
-    <div class="note" style="margin-top:24px;">
-      <span>Blocked domain:</span><br>
-      <span class="domain">%U</span>
-    </div>
-    <div style="margin-top:30px;font-size:0.95em;">
-      <em>If you believe this is in error, please contact your IT administrator.</em>
-    </div>
-  </div>
+    <p>You are using a <strong>PAW</strong>. Do you really need access to this site?</p>
+    <div class="domain"><span>Blocked address</span>%U</div>
+    <p class="muted">If you believe this is in error, please contact your IT administrator.</p>
+    <div class="brand">PAW Proxy Pilot</div>
+  </main>
 </body>
 </html>

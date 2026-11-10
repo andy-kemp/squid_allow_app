@@ -1,12 +1,17 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <title>Security Settings - PAW Proxy Pilot</title>
-</head>
-<body>
-    <h1>Security Settings (Coming Soon)</h1>
-    <p>This page will allow you to manage security settings.</p>
-    <a href="{{ url_for('admin') }}">Back to Admin Panel</a>
-</body>
-</html>
+{% extends "base.html" %}
+{% block title %}Security settings{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>Security settings</h1>
+    <p class="muted">Coming soon.</p>
+  </div>
+  <div class="actions">
+    <a class="btn btn-ghost" href="{{ url_for('admin') }}">Back to Admin</a>
+  </div>
+</div>
+<section class="card">
+  <h2>Not available yet</h2>
+  <p class="muted">This page will let you manage security settings.</p>
+</section>
+{% endblock %}

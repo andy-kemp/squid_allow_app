@@ -1,63 +1,51 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <title>Manage Users - PAW Proxy Pilot</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-</head>
-<body>
-<div class="card">
-    <h2>Manage Users</h2>
-    <div style="margin-bottom:18px;">
-        {% if session.admin_level >= 1 %}
-        <a href="{{ url_for('admin_users_add') }}" class="btn btn-success">+ Add User</a>
-        {% endif %}
-        <a href="{{ url_for('admin') }}" class="btn btn-secondary" style="float:right;">Back to Admin Panel</a>
-    </div>
-    <table>
-        <tr>
-            <th>Username</th>
-            <th>Email</th>
-            <th>Admin Level</th>
-            <th>Actions</th>
-        </tr>
-        {% for user in users %}
-        <tr>
-            <td>{{ user.username }}</td>
-            <td>{{ user.email }}</td>
-            <td>
-              {% if user.admin_level == 99 %}
-                <span title="God Admin">God</span>
-              {% elif user.admin_level > 0 %}
-                <span title="User Admin">Admin</span>
-              {% else %}
-                User
-              {% endif %}
-            </td>
-            <td>
-              {% if session.admin_level == 99 or (session.admin_level > 0 and user.admin_level < 99) %}
-                <a href="{{ url_for('admin_users_edit', user_id=user.id) }}" class="btn btn-secondary btn-sm">Edit</a>
-                {% if user.admin_level < 99 %}
-                  <a href="{{ url_for('admin_users_reset_password', user_id=user.id) }}" class="btn btn-warning btn-sm">Reset Password</a>
-                {% endif %}
-                {% if session.admin_level == 99 %}
-                  {% if user.admin_level < 99 %}
-                    <form method="post" action="{{ url_for('admin_users_delete', user_id=user.id) }}" style="display:inline;">
-                        <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Delete user {{ user.username }}?')">Delete</button>
-                    </form>
-                    <a href="{{ url_for('admin_users_reset_mfa', user_id=user.id) }}" class="btn btn-secondary btn-sm">Reset MFA</a>
-                  {% endif %}
-                {% endif %}
-              {% endif %}
-            </td>
-        </tr>
-        {% endfor %}
-    </table>
-    {% if session.admin_level == 99 %}
-      <div style="margin-top:24px;">
-        <a href="{{ url_for('admin_login_audit') }}" class="btn btn-secondary">View Login Audit</a>
-      </div>
-    {% endif %}
+{% extends "base.html" %}
+{% block title %}Users{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>Users</h1>
+    <p class="muted">People who can sign in to PAW Proxy Pilot.</p>
+  </div>
+  <div class="actions">
+    {% if session.admin_level >= 1 %}<a class="btn" href="{{ url_for('admin_users_add') }}">Add user</a>{% endif %}
+    {% if session.admin_level == 99 %}<a class="btn btn-ghost" href="{{ url_for('admin_login_audit') }}">Login audit</a>{% endif %}
+    <a class="btn btn-ghost" href="{{ url_for('admin') }}">Back to Admin</a>
+  </div>
 </div>
-</body>
-</html>
+<div class="card table-wrap">
+  <table>
+    <thead><tr><th>Username</th><th>Email</th><th>Level</th><th class="right">Actions</th></tr></thead>
+    <tbody>
+    {% for user in users %}
+      <tr>
+        <td>{{ user.username }}</td>
+        <td>{{ user.email }}</td>
+        <td>
+          {% if user.admin_level == 99 %}<span class="tag" title="God Admin">God</span>
+          {% elif user.admin_level > 0 %}<span class="tag tag-muted" title="User Admin">Admin</span>
+          {% else %}<span class="muted">User</span>{% endif %}
+        </td>
+        <td>
+          <div class="row-actions">
+          {% if session.admin_level == 99 or (session.admin_level > 0 and user.admin_level < 99) %}
+            <a class="btn btn-ghost btn-xs" href="{{ url_for('admin_users_edit', user_id=user.id) }}">Edit</a>
+            {% if user.admin_level < 99 %}
+            <a class="btn btn-ghost btn-xs" href="{{ url_for('admin_users_reset_password', user_id=user.id) }}">Reset password</a>
+            {% endif %}
+            {% if session.admin_level == 99 and user.admin_level < 99 %}
+            <a class="btn btn-ghost btn-xs" href="{{ url_for('admin_users_reset_mfa', user_id=user.id) }}">Reset MFA</a>
+            <form method="post" action="{{ url_for('admin_users_delete', user_id=user.id) }}" onsubmit="return confirm('Delete user {{ user.username | e }}?');">
+              <button type="submit" class="btn btn-danger btn-xs">Delete</button>
+            </form>
+            {% endif %}
+          {% endif %}
+          </div>
+        </td>
+      </tr>
+    {% else %}
+      <tr><td colspan="4" class="muted">No users.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

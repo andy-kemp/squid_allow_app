@@ -1,35 +1,32 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <title>Edit User - PAW Proxy Pilot</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-</head>
-<body>
-<div class="card" style="max-width:440px;">
-    <h2>Edit User</h2>
-    <form method="post">
-        <label for="email">Email</label>
-        <input type="email" name="email" id="email" required value="{{ user.email }}">
-        <label for="admin_level">Admin Level</label>
-        <select name="admin_level" id="admin_level" required>
-            <option value="0" {% if user.admin_level == 0 %}selected{% endif %}>User</option>
-            {% if session.admin_level == 99 %}
-            <option value="1" {% if user.admin_level == 1 %}selected{% endif %}>User Admin</option>
-            <option value="99" {% if user.admin_level == 99 %}selected{% endif %}>God Admin</option>
-            {% elif session.admin_level > 0 %}
-            <option value="1" {% if user.admin_level == 1 %}selected{% endif %}>User Admin</option>
-            {% endif %}
-        </select>
-        <button type="submit" class="btn btn-success" style="width:100%;margin-top:14px;">Update User</button>
-    </form>
-    {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            {% for category, message in messages %}
-                <div class="alert alert-{{ category }}">{{ message }}</div>
-            {% endfor %}
-        {% endif %}
-    {% endwith %}
+{% extends "base.html" %}
+{% block title %}Edit user{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>Edit user</h1>
+    <p class="muted">{{ user.username }}</p>
+  </div>
 </div>
-</body>
-</html>
+<form class="card form" method="post">
+  <div class="field">
+    <label for="email">Email</label>
+    <input type="email" name="email" id="email" required value="{{ user.email }}">
+  </div>
+  <div class="field">
+    <label for="admin_level">Admin level</label>
+    <select name="admin_level" id="admin_level" required>
+      <option value="0" {% if user.admin_level == 0 %}selected{% endif %}>User</option>
+      {% if session.admin_level == 99 %}
+      <option value="1" {% if user.admin_level == 1 %}selected{% endif %}>User Admin</option>
+      <option value="99" {% if user.admin_level == 99 %}selected{% endif %}>God Admin</option>
+      {% elif session.admin_level > 0 %}
+      <option value="1" {% if user.admin_level == 1 %}selected{% endif %}>User Admin</option>
+      {% endif %}
+    </select>
+  </div>
+  <div class="form-actions">
+    <button type="submit" class="btn">Save changes</button>
+    <a class="btn btn-ghost" href="{{ url_for('admin_users') }}">Cancel</a>
+  </div>
+</form>
+{% endblock %}

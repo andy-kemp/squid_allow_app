@@ -1,8 +1,0 @@
-{% if changes_pending %}
-<div class="banner-alert">
-    Changes detected: Please restart the Squid service to apply updates.
-    <form action="{{ url_for('restart_squid') }}" method="post" style="display:inline;">
-        <button type="submit" class="btn btn-warning" style="margin-left:1em;">Restart Squid</button>
-    </form>
-</div>
-{% endif %}

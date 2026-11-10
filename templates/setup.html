@@ -1,55 +1,28 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>PAW Proxy Pilot - Setup Admin User</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    <style>
-        body { max-width: 480px; margin: 40px auto; font-family: 'Segoe UI', Arial, sans-serif; }
-        .setup-box { border: 1px solid #ccc; padding: 2em; border-radius: 10px; background: #f9f9f9; }
-        h1 { font-size: 1.6em; margin-bottom: .3em; }
-        label { display: block; margin-top: 1em; }
-        input { width: 100%; padding: .5em; margin-top: .2em; box-sizing: border-box; }
-        .info { color: #0a6d0a; margin-bottom: 1em; }
-        .alert { color: #b00; margin-bottom: 1em; }
-        button { margin-top: 1.5em; width: 100%; background: #0066aa; color: #fff; border: none; padding: .7em; border-radius: 5px; font-size: 1em; }
-        button:hover { background: #005399; }
-    </style>
-</head>
-<body>
-    <div class="setup-box">
-        <h1>Welcome to the PAW Proxy Pilot app</h1>
-        <div class="info">
-            Please set up your initial admin user.<br>
-            <strong>This account will be created as a level 99 (god) administrator.</strong>
-        </div>
-        {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            <div class="alert">
-                {% for category, message in messages %}
-                    {{ message }}<br>
-                {% endfor %}
-            </div>
-        {% endif %}
-        {% endwith %}
-        <form method="post" autocomplete="off">
-            <label for="username">Username:</label>
-            <input id="username" name="username" type="text" required autofocus>
-
-            <label for="password">Password:</label>
-            <input id="password" name="password" type="password" required autocomplete="new-password">
-
-            <label for="password2">Confirm Password:</label>
-            <input id="password2" name="password2" type="password" required autocomplete="new-password">
-
-            <label for="email">Email Address:</label>
-            <input id="email" name="email" type="email" required>
-
-            <button type="submit">Continue &rarr;</button>
-        </form>
-        <div style="margin-top:1em; font-size:.95em; color:#888;">
-            After creating your admin user, you will be prompted to set up multi-factor authentication (MFA).
-        </div>
+{% extends "base.html" %}
+{% block title %}First-time setup{% endblock %}
+{% block content %}
+<section class="login card">
+  <h1>Welcome to PAW Proxy Pilot</h1>
+  <p class="muted">Create the first administrator. This account gets full (level 99) access.</p>
+  <form class="form" method="post" autocomplete="off">
+    <div class="field">
+      <label for="username">Username</label>
+      <input id="username" name="username" type="text" required autofocus>
     </div>
-</body>
-</html>
+    <div class="field">
+      <label for="password">Password</label>
+      <input id="password" name="password" type="password" required autocomplete="new-password">
+    </div>
+    <div class="field">
+      <label for="password2">Confirm password</label>
+      <input id="password2" name="password2" type="password" required autocomplete="new-password">
+    </div>
+    <div class="field">
+      <label for="email">Email address</label>
+      <input id="email" name="email" type="email" required>
+    </div>
+    <button class="btn btn-lg" type="submit">Continue</button>
+    <p class="hint">Next you'll set up multi-factor authentication (MFA).</p>
+  </form>
+</section>
+{% endblock %}

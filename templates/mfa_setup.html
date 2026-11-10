@@ -1,40 +1,18 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <title>Set Up MFA - PAW Proxy Pilot</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-</head>
-<body>
-    <div class="login-container">
-        <form method="post" class="login-form">
-            <h2>Set Up MFA</h2>
-            {% with messages = get_flashed_messages(with_categories=true) %}
-              {% if messages %}
-                {% for category, message in messages %}
-                  <div class="alert alert-{{ category }}">{{ message }}</div>
-                {% endfor %}
-              {% endif %}
-            {% endwith %}
-            <p>Scan this QR code with your authenticator app:</p>
-            <div style="text-align:center; margin: 20px 0;">
-                <img src="https://api.qrserver.com/v1/create-qr-code/?data={{ qr_uri|urlencode }}&size=180x180" alt="MFA QR Code" style="background:#fff; padding:8px; border-radius:8px;">
-            </div>
-            <p style="font-size:0.95em; color:#222;">Or enter this code manually:<br><b>{{ secret }}</b></p>
-            <label for="code">Enter the 6-digit code from your app (no spaces):</label>
-            <input
-                type="text"
-                name="code"
-                id="code"
-                maxlength="6"
-                inputmode="numeric"
-                required
-                autocomplete="one-time-code"
-                placeholder="e.g. 123456"
-                pattern="[0-9]{6}"
-            >
-            <button type="submit" class="btn">Activate MFA</button>
-        </form>
+{% extends "base.html" %}
+{% block title %}Set up MFA{% endblock %}
+{% block content %}
+<section class="login card">
+  <h1>Set up MFA</h1>
+  <p class="muted">Scan this QR code with your authenticator app.</p>
+  <img class="qr" src="https://api.qrserver.com/v1/create-qr-code/?data={{ qr_uri|urlencode }}&size=180x180" alt="MFA QR code" width="196" height="196">
+  <p class="muted small">Or enter this key manually:<br><span class="secret">{{ secret }}</span></p>
+  <form class="form" method="post">
+    <div class="field">
+      <label for="code">Authenticator code</label>
+      <input class="code-input" type="text" name="code" id="code" maxlength="6" inputmode="numeric" required autocomplete="one-time-code" placeholder="123456" pattern="[0-9]{6}">
+      <p class="hint">The 6-digit code your app shows, without spaces.</p>
     </div>
-</body>
-</html>
+    <button class="btn btn-lg" type="submit">Activate MFA</button>
+  </form>
+</section>
+{% endblock %}
